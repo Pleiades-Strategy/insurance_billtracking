@@ -1,0 +1,44 @@
+yaml
+name: Sync Airtable → data.json
+
+on:
+  schedule:
+    # Runs every day at 6:00 AM UTC (adjust to your preference)
+    - cron: '0 6 * * *'
+  workflow_dispatch:   # Also allows manual trigger from the Actions tab
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install requests python-dotenv
+
+      - name: Write .env file
+        run: |
+          echo "airtable_key=${{ secrets.AIRTABLE_KEY }}" >> .env
+          echo "airtable_base_id=${{ secrets.AIRTABLE_BASE_ID }}" >> .env
+
+      - name: Sync Airtable → SQLite
+        run: python -m cli.sync_airtable
+
+      - name: Export SQLite → docs/data.json
+        run: python export_json.py
+
+      - name: Commit and push data.json
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/data.json
+          git diff --cached --quiet || git commit -m "Auto-sync: refresh data.json $(date -u '+%Y-%m-%d %H:%M UTC')"
+          git push
