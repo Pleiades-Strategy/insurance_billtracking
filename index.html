@@ -4,171 +4,284 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Insurance Bill Tracker | Pleiades Strategy</title>
+
+<!--
+  FONTS
+  Abel (headings) — loaded from Google Fonts.
+  Proxima Nova (body) — commercial Adobe Font. To enable it inside this iframe,
+  add your TypeKit embed script below (replace XXXXXXX with your kit ID):
+    <script src="https://use.typekit.net/XXXXXXX.js"></script>
+    <script>try{Typekit.load({async:true});}catch(e){}</script>
+  Without it, Nunito Sans (free Google Font) is used as the fallback.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Abel&family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700&display=swap" rel="stylesheet">
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
-/* ── Reset ──────────────────────────────────────────────── */
+/* ─────────────────────────────────────────────
+   PLEIADES STRATEGY BRAND TOKENS
+   Text Body & Accents palette
+───────────────────────────────────────────── */
+:root {
+  --brand:       #00005B;   /* brand navy */
+  --accent:      #6360F0;   /* violet — active states, links */
+  --blue-deep:   #1411B8;   /* Categories #1 */
+  --violet:      #6360F0;   /* Categories #2 */
+  --teal:        #63B289;   /* Categories #3 */
+  --amber:       #F1981E;   /* Categories #4 */
+  --crimson:     #8E0000;   /* Categories #5 */
+  --gray-l:      #D7D7D6;   /* light gray */
+  --blue-l:      #C9DAEB;   /* light blue */
+  --text:        #0D0D0D;   /* near-black body */
+  --text-mid:    #666666;   /* mid gray */
+  --bg:          #F5F5F7;   /* page background */
+}
+
+/* ── Reset ──────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-       background: #f0f4f8; color: #1a2744; font-size: 14px; }
-a { color: #2563eb; text-decoration: none; }
+body {
+  font-family: "proxima-nova", "Proxima Nova", "Nunito Sans", -apple-system,
+               BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg); color: var(--text); font-size: 14px;
+}
+a { color: var(--accent); text-decoration: none; }
 a:hover { text-decoration: underline; }
 button { cursor: pointer; }
 
-/* ── Header ─────────────────────────────────────────────── */
-.header { background: #1a2744; color: #fff; padding: 10px 24px;
-          display: flex; align-items: center; justify-content: space-between; }
-.brand { font-size: 12px; color: #8da0c4; letter-spacing: .4px; }
-.brand .dot { color: #60a5fa; margin-right: 4px; }
-.header-title { font-size: 17px; font-weight: 700; margin-top: 2px; }
-.header-right { font-size: 11px; color: #8da0c4; text-align: right; }
+/* ── Abel utility (headings) ────────────────── */
+.abel { font-family: "Abel", sans-serif; letter-spacing: 0.03em; }
 
-/* ── Nav tabs ────────────────────────────────────────────── */
-.nav { background: #fff; border-bottom: 1px solid #dde3ec;
-       display: flex; padding: 0 16px; overflow-x: auto;
-       white-space: nowrap; scrollbar-width: none; }
+/* ── Header ─────────────────────────────────── */
+.header {
+  background: var(--brand); color: #fff;
+  padding: 10px 24px; display: flex; align-items: center; justify-content: space-between;
+}
+.brand-mark { font-size: 11px; color: var(--blue-l); letter-spacing: .5px; text-transform: uppercase; }
+.brand-mark .dot { color: var(--accent); margin-right: 5px; }
+.header-title {
+  font-family: "Abel", sans-serif; letter-spacing: .08em;
+  font-size: 18px; font-weight: 400; margin-top: 3px; text-transform: uppercase;
+}
+.header-right { font-size: 11px; color: var(--blue-l); text-align: right; }
+
+/* ── Nav ────────────────────────────────────── */
+.nav {
+  background: #fff; border-bottom: 1px solid var(--gray-l);
+  display: flex; padding: 0 16px; overflow-x: auto;
+  white-space: nowrap; scrollbar-width: none;
+}
 .nav::-webkit-scrollbar { display: none; }
-.nav-btn { padding: 11px 16px; border: none; background: none;
-           font-size: 13px; color: #5a6a8a;
-           border-bottom: 2px solid transparent; flex-shrink: 0;
-           transition: color .15s, border-color .15s; }
-.nav-btn:hover { color: #1a2744; }
-.nav-btn.active { color: #1a2744; border-bottom-color: #2563eb; font-weight: 600; }
+.nav-btn {
+  padding: 11px 16px; border: none; background: none; font-size: 13px;
+  font-family: inherit; color: var(--text-mid); border-bottom: 2px solid transparent;
+  flex-shrink: 0; transition: color .15s, border-color .15s;
+}
+.nav-btn:hover { color: var(--brand); }
+.nav-btn.active { color: var(--brand); border-bottom-color: var(--accent); font-weight: 600; }
 
-/* ── Views ───────────────────────────────────────────────── */
+/* ── Views ──────────────────────────────────── */
 .view { display: none; padding: 20px 24px 32px; }
 .view.active { display: block; }
 
-/* ── Filter bar ──────────────────────────────────────────── */
+/* ── Filter bar ─────────────────────────────── */
 .filter-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
-.filter-label { font-size: 12px; color: #8090b0; }
-.yr-btn { padding: 4px 14px; border: 1px solid #c8d3e8; border-radius: 20px;
-          background: #fff; font-size: 12px; color: #4a5a7a; transition: all .15s; }
-.yr-btn.active { background: #2563eb; color: #fff; border-color: #2563eb; }
-.filter-meta { margin-left: auto; font-size: 12px; color: #8090b0; }
+.filter-label { font-size: 12px; color: var(--text-mid); }
+.yr-btn {
+  padding: 4px 14px; border: 1px solid var(--gray-l); border-radius: 20px;
+  background: #fff; font-size: 12px; font-family: inherit; color: var(--text-mid);
+  transition: all .15s;
+}
+.yr-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.filter-meta { margin-left: auto; font-size: 12px; color: var(--text-mid); }
 
-/* ── Stat cards ──────────────────────────────────────────── */
-.stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-             gap: 14px; margin-bottom: 20px; }
-.stat-card { background: #fff; border-radius: 10px; padding: 18px 20px;
-             box-shadow: 0 1px 4px rgba(0,0,0,.07); }
-.stat-label { font-size: 10px; font-weight: 700; text-transform: uppercase;
-              letter-spacing: .6px; color: #8090b0; }
-.stat-value { font-size: 34px; font-weight: 800; line-height: 1.1; margin: 6px 0 3px; }
-.stat-sub { font-size: 11px; color: #aab0c0; }
+/* ── Stat cards ─────────────────────────────── */
+.stats-row {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 14px; margin-bottom: 20px;
+}
+.stat-card {
+  background: #fff; border-radius: 10px; padding: 18px 20px;
+  box-shadow: 0 1px 6px rgba(0,0,91,.08);
+}
+.stat-label {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .7px; color: var(--text-mid);
+}
+.stat-value {
+  font-family: "Abel", sans-serif; font-size: 36px; font-weight: 400;
+  line-height: 1.1; margin: 6px 0 3px; letter-spacing: .02em;
+}
+.stat-sub { font-size: 11px; color: #aaa; }
 
-/* ── Chart cards ─────────────────────────────────────────── */
+/* ── Chart cards ────────────────────────────── */
 .charts-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
-.chart-card { background: #fff; border-radius: 10px; padding: 18px 20px;
-              box-shadow: 0 1px 4px rgba(0,0,0,.07); }
-.chart-card-title { font-size: 10px; font-weight: 700; text-transform: uppercase;
-                    letter-spacing: .6px; color: #8090b0; margin-bottom: 14px; }
+.chart-card {
+  background: #fff; border-radius: 10px; padding: 18px 20px;
+  box-shadow: 0 1px 6px rgba(0,0,91,.08);
+}
+.chart-card-title {
+  font-family: "Abel", sans-serif; font-size: 13px; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--text-mid); margin-bottom: 14px;
+}
 
-/* ── Tables ──────────────────────────────────────────────── */
+/* ── Tables ─────────────────────────────────── */
 .table-controls { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; align-items: center; }
-.search-box { padding: 7px 12px; border: 1px solid #c8d3e8; border-radius: 6px;
-              font-size: 13px; width: 240px; outline: none; }
-.search-box:focus { border-color: #2563eb; }
-.sel-filter { padding: 7px 10px; border: 1px solid #c8d3e8; border-radius: 6px;
-              font-size: 13px; background: #fff; outline: none; }
-.tbl-wrap { background: #fff; border-radius: 10px; overflow: hidden;
-            box-shadow: 0 1px 4px rgba(0,0,0,.07); overflow-x: auto; }
+.search-box {
+  padding: 7px 12px; border: 1px solid var(--gray-l); border-radius: 6px;
+  font-size: 13px; font-family: inherit; width: 240px; outline: none;
+}
+.search-box:focus { border-color: var(--accent); }
+.sel-filter {
+  padding: 7px 10px; border: 1px solid var(--gray-l); border-radius: 6px;
+  font-size: 13px; font-family: inherit; background: #fff; outline: none;
+}
+.tbl-wrap {
+  background: #fff; border-radius: 10px; overflow: hidden;
+  box-shadow: 0 1px 6px rgba(0,0,91,.08); overflow-x: auto;
+}
 table { width: 100%; border-collapse: collapse; }
-th { padding: 9px 14px; text-align: left; font-size: 10px; font-weight: 700;
-     text-transform: uppercase; letter-spacing: .5px; color: #8090b0;
-     background: #f8fafc; border-bottom: 1px solid #e6eaf2;
-     white-space: nowrap; cursor: pointer; user-select: none; }
-th:hover { color: #2563eb; }
+th {
+  padding: 9px 14px; text-align: left; font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .6px; color: var(--text-mid);
+  background: var(--bg); border-bottom: 1px solid var(--gray-l);
+  white-space: nowrap; cursor: pointer; user-select: none; font-family: inherit;
+}
+th:hover { color: var(--accent); }
 th .sa { margin-left: 4px; opacity: .4; }
 th.sort-asc .sa::after  { content: "▲"; opacity: 1; }
 th.sort-desc .sa::after { content: "▼"; opacity: 1; }
 th:not(.sort-asc):not(.sort-desc) .sa::after { content: "⇅"; }
-td { padding: 9px 14px; border-bottom: 1px solid #f0f3f8; color: #2a3a5a; vertical-align: top; }
+td {
+  padding: 9px 14px; border-bottom: 1px solid rgba(215,215,214,.6);
+  color: var(--text); vertical-align: top;
+}
 tr:last-child td { border-bottom: none; }
-tr.clickable:hover td { background: #eef4ff; cursor: pointer; }
+tr.clickable:hover td { background: rgba(99,96,240,.05); cursor: pointer; }
 
-/* ── Badges ──────────────────────────────────────────────── */
-.badge { display: inline-block; padding: 2px 9px; border-radius: 12px;
-         font-size: 11px; font-weight: 600; white-space: nowrap; }
-.badge-enacted { background: #dcfce7; color: #15803d; }
-.badge-active  { background: #dbeafe; color: #1d4ed8; }
-.badge-dead    { background: #fee2e2; color: #b91c1c; }
-.badge-other   { background: #f1f5f9; color: #64748b; }
-.cat-tag { display: inline-block; padding: 2px 9px; border-radius: 12px;
-           font-size: 11px; background: #e0e7ff; color: #3730a3; margin: 1px 2px 1px 0; }
+/* ── Badges ─────────────────────────────────── */
+.badge {
+  display: inline-block; padding: 2px 9px; border-radius: 12px;
+  font-size: 11px; font-weight: 600; white-space: nowrap;
+}
+/* Enacted — teal family */
+.badge-enacted { background: rgba(99,178,137,.15); color: #1a6b42; }
+/* Active — brand light blue */
+.badge-active  { background: var(--blue-l); color: var(--brand); }
+/* Dead — crimson family */
+.badge-dead    { background: rgba(142,0,0,.1); color: var(--crimson); }
+/* Other — neutral gray */
+.badge-other   { background: var(--gray-l); color: var(--text-mid); }
+/* Category tag — violet family */
+.cat-tag {
+  display: inline-block; padding: 2px 8px; border-radius: 12px;
+  font-size: 11px; background: rgba(99,96,240,.1); color: var(--blue-deep);
+  margin: 1px 2px 1px 0;
+}
 
-/* ── Pagination ──────────────────────────────────────────── */
+/* ── Pagination ─────────────────────────────── */
 .pagination { display: flex; justify-content: center; gap: 6px; padding: 16px 0 4px; flex-wrap: wrap; }
-.page-btn { padding: 5px 11px; border: 1px solid #c8d3e8; border-radius: 5px;
-            background: #fff; font-size: 12px; color: #4a5a7a; transition: all .15s; }
-.page-btn:hover { border-color: #2563eb; color: #2563eb; }
-.page-btn.active { background: #2563eb; color: #fff; border-color: #2563eb; }
-.page-info { font-size: 12px; color: #8090b0; text-align: center; margin-top: 6px; }
+.page-btn {
+  padding: 5px 11px; border: 1px solid var(--gray-l); border-radius: 5px;
+  background: #fff; font-size: 12px; font-family: inherit; color: var(--text-mid); transition: all .15s;
+}
+.page-btn:hover { border-color: var(--accent); color: var(--accent); }
+.page-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.page-info { font-size: 12px; color: var(--text-mid); text-align: center; margin-top: 6px; }
 
-/* ── Category cards ──────────────────────────────────────── */
+/* ── Category cards ─────────────────────────── */
 .cat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; margin-top: 20px; }
-.cat-card { background: #fff; border-radius: 10px; padding: 18px;
-            box-shadow: 0 1px 4px rgba(0,0,0,.07); cursor: pointer; transition: box-shadow .15s, transform .1s; }
-.cat-card:hover { box-shadow: 0 4px 14px rgba(0,0,0,.12); transform: translateY(-1px); }
-.cat-name { font-size: 13px; font-weight: 600; color: #1a2744; margin-bottom: 6px; }
-.cat-count { font-size: 28px; font-weight: 800; color: #2563eb; }
-.cat-sub { font-size: 11px; color: #aab0c0; margin-top: 2px; }
-.cat-buckets { margin-top: 8px; font-size: 11px; color: #6070a0; }
+.cat-card {
+  background: #fff; border-radius: 10px; padding: 18px;
+  box-shadow: 0 1px 6px rgba(0,0,91,.08); cursor: pointer;
+  transition: box-shadow .15s, transform .1s;
+}
+.cat-card:hover { box-shadow: 0 4px 18px rgba(0,0,91,.14); transform: translateY(-1px); }
+.cat-name { font-size: 13px; font-weight: 600; color: var(--brand); margin-bottom: 6px; }
+.cat-count {
+  font-family: "Abel", sans-serif; font-size: 30px; font-weight: 400;
+  color: var(--accent); letter-spacing: .02em;
+}
+.cat-sub { font-size: 11px; color: #aaa; margin-top: 2px; }
+.cat-buckets { margin-top: 8px; font-size: 11px; color: var(--text-mid); }
 
-/* ── Tile map (By Geography) ─────────────────────────────── */
+/* ── Tile map ───────────────────────────────── */
 .geo-wrap { overflow-x: auto; padding: 4px 0 20px; }
-.tile-map { display: grid;
-            grid-template-columns: repeat(12, 76px);
-            grid-template-rows: repeat(7, 76px);
-            gap: 5px; min-width: max-content; }
-.tile { border-radius: 8px; display: flex; flex-direction: column;
-        align-items: center; justify-content: center;
-        cursor: pointer; transition: transform .12s, box-shadow .12s; }
-.tile:hover { transform: scale(1.07); box-shadow: 0 4px 14px rgba(0,0,0,.25); }
-.tile-code  { font-size: 14px; font-weight: 700; line-height: 1; }
-.tile-count { font-size: 20px; font-weight: 800; line-height: 1; margin-top: 3px; }
+.tile-map {
+  display: grid;
+  grid-template-columns: repeat(12, 76px);
+  grid-template-rows: repeat(7, 76px);
+  gap: 5px; min-width: max-content;
+}
+.tile {
+  border-radius: 8px; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  cursor: pointer; transition: transform .12s, box-shadow .12s;
+}
+.tile:hover { transform: scale(1.07); box-shadow: 0 4px 14px rgba(0,0,91,.25); }
+.tile-code  { font-family: "Abel", sans-serif; font-size: 15px; font-weight: 400; letter-spacing: .04em; line-height: 1; }
+.tile-count { font-family: "Abel", sans-serif; font-size: 21px; font-weight: 400; line-height: 1; margin-top: 3px; }
 
-/* ── Bill Detail ─────────────────────────────────────────── */
+/* ── Bill Detail ────────────────────────────── */
 .detail-back-bar { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
-.back-btn { padding: 6px 14px; border: 1px solid #c8d3e8; border-radius: 6px;
-            background: #fff; font-size: 13px; color: #2563eb; transition: all .15s; }
-.back-btn:hover { background: #2563eb; color: #fff; border-color: #2563eb; }
-.detail-card { background: #fff; border-radius: 10px; padding: 22px 24px;
-               box-shadow: 0 1px 4px rgba(0,0,0,.07); margin-bottom: 16px; }
+.back-btn {
+  padding: 6px 14px; border: 1px solid var(--gray-l); border-radius: 6px;
+  background: #fff; font-size: 13px; font-family: inherit; color: var(--accent);
+  transition: all .15s;
+}
+.back-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+.detail-card {
+  background: #fff; border-radius: 10px; padding: 22px 24px;
+  box-shadow: 0 1px 6px rgba(0,0,91,.08); margin-bottom: 16px;
+}
 .detail-header-inner { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; flex-wrap: wrap; }
-.detail-title { font-size: 20px; font-weight: 800; color: #1a2744; margin-bottom: 10px; }
+.detail-title {
+  font-family: "Abel", sans-serif; font-size: 22px; font-weight: 400;
+  color: var(--brand); margin-bottom: 10px; letter-spacing: .03em;
+}
 .detail-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
 .detail-links { display: flex; gap: 10px; flex-wrap: wrap; }
-.detail-link-btn { display: inline-flex; align-items: center; gap: 5px;
-                   padding: 6px 14px; border: 1px solid #c8d3e8; border-radius: 6px;
-                   font-size: 12px; color: #2563eb; background: #fff;
-                   transition: all .15s; }
-.detail-link-btn:hover { background: #2563eb; color: #fff; border-color: #2563eb; text-decoration: none; }
-.detail-dates { min-width: 200px; text-align: right; font-size: 12px; color: #8090b0; flex-shrink: 0; }
-.detail-date-row { margin-bottom: 6px; }
-.detail-date-label { font-size: 10px; font-weight: 700; text-transform: uppercase;
-                     letter-spacing: .5px; color: #aab0c0; display: block; }
-.detail-date-val { font-size: 14px; font-weight: 700; color: #1a2744; }
+.detail-link-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 6px 14px; border: 1px solid var(--gray-l); border-radius: 6px;
+  font-size: 12px; font-family: inherit; color: var(--accent); background: #fff;
+  transition: all .15s;
+}
+.detail-link-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); text-decoration: none; }
+.detail-dates { min-width: 200px; text-align: right; flex-shrink: 0; }
+.detail-date-row { margin-bottom: 8px; }
+.detail-date-label {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .6px; color: var(--text-mid); display: block;
+}
+.detail-date-val {
+  font-family: "Abel", sans-serif; font-size: 15px; font-weight: 400;
+  color: var(--brand); letter-spacing: .02em;
+}
 .detail-columns { display: grid; grid-template-columns: 3fr 2fr; gap: 16px; margin-bottom: 16px; }
 @media (max-width: 780px) { .detail-columns { grid-template-columns: 1fr; } }
-.detail-section-title { font-size: 10px; font-weight: 700; text-transform: uppercase;
-                        letter-spacing: .6px; color: #8090b0; margin-bottom: 12px; }
-.detail-summary-text { font-size: 13px; line-height: 1.7; color: #2a3a5a; }
-.sponsor-item { padding: 10px 0; border-bottom: 1px solid #f0f3f8; }
+.detail-section-title {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .7px; color: var(--text-mid); margin-bottom: 12px;
+}
+.detail-summary-text { font-size: 13px; line-height: 1.75; color: var(--text); }
+.sponsor-item { padding: 10px 0; border-bottom: 1px solid rgba(215,215,214,.6); }
 .sponsor-item:last-child { border-bottom: none; }
-.sponsor-name { font-size: 14px; font-weight: 700; }
-.sponsor-meta { font-size: 11px; color: #8090b0; margin-top: 2px; }
-.party-d { color: #1d4ed8; }
-.party-r { color: #b91c1c; }
-.party-i { color: #6b7280; }
-.hearing-item { padding: 12px 0; border-bottom: 1px solid #f0f3f8; }
+.sponsor-name { font-size: 14px; font-weight: 600; }
+.sponsor-meta { font-size: 11px; color: var(--text-mid); margin-top: 3px; }
+.party-d { color: var(--blue-deep); }
+.party-r { color: var(--crimson); }
+.party-i { color: var(--text-mid); }
+.hearing-item { padding: 12px 0; border-bottom: 1px solid rgba(215,215,214,.6); }
 .hearing-item:last-child { border-bottom: none; }
-.hearing-date { font-size: 13px; font-weight: 700; color: #1a2744; }
-.hearing-title { font-size: 12px; color: #4a5a7a; margin-top: 2px; }
-.hearing-loc { font-size: 11px; color: #8090b0; margin-top: 2px; }
+.hearing-date { font-family: "Abel", sans-serif; font-size: 14px; color: var(--brand); letter-spacing: .02em; }
+.hearing-title { font-size: 12px; color: var(--text-mid); margin-top: 2px; }
+.hearing-loc { font-size: 11px; color: #aaa; margin-top: 2px; }
 
-/* ── Misc ────────────────────────────────────────────────── */
-.loading-msg { text-align: center; padding: 60px 24px; color: #8090b0; font-size: 15px; }
-.empty-msg   { text-align: center; padding: 32px; color: #aab0c0; font-size: 13px; }
+/* ── Misc ───────────────────────────────────── */
+.loading-msg { text-align: center; padding: 60px 24px; color: var(--text-mid); font-size: 15px; }
+.empty-msg   { text-align: center; padding: 32px; color: #aaa; font-size: 13px; }
 </style>
 </head>
 <body>
@@ -176,7 +289,7 @@ tr.clickable:hover td { background: #eef4ff; cursor: pointer; }
 <!-- ── Header ──────────────────────────────────────────────── -->
 <header class="header">
   <div>
-    <div class="brand"><span class="dot">●</span>Pleiades Strategy</div>
+    <div class="brand-mark"><span class="dot">●</span>Pleiades Strategy</div>
     <div class="header-title">Insurance Bill Tracker</div>
   </div>
   <div class="header-right" id="header-meta">Loading…</div>
@@ -194,7 +307,7 @@ tr.clickable:hover td { background: #eef4ff; cursor: pointer; }
 
 <div id="loading-msg" class="loading-msg">Loading data…</div>
 
-<!-- ══════════════════ DASHBOARD ══════════════════ -->
+<!-- ══ DASHBOARD ══ -->
 <div id="view-dashboard" class="view">
   <div class="filter-bar">
     <span class="filter-label">Year:</span>
@@ -211,7 +324,7 @@ tr.clickable:hover td { background: #eef4ff; cursor: pointer; }
   </div>
 </div>
 
-<!-- ══════════════════ BILLS ══════════════════ -->
+<!-- ══ BILLS ══ -->
 <div id="view-bills" class="view">
   <div class="filter-bar">
     <span class="filter-label">Year:</span>
@@ -244,7 +357,7 @@ tr.clickable:hover td { background: #eef4ff; cursor: pointer; }
   <div class="page-info" id="bills-page-info"></div>
 </div>
 
-<!-- ══════════════════ LEGISLATORS ══════════════════ -->
+<!-- ══ LEGISLATORS ══ -->
 <div id="view-legislators" class="view">
   <div class="table-controls">
     <input class="search-box" id="leg-search" placeholder="Search legislators…" type="search">
@@ -270,7 +383,7 @@ tr.clickable:hover td { background: #eef4ff; cursor: pointer; }
   <div class="page-info" id="leg-page-info"></div>
 </div>
 
-<!-- ══════════════════ HEARINGS ══════════════════ -->
+<!-- ══ HEARINGS ══ -->
 <div id="view-hearings" class="view">
   <div class="table-controls">
     <input class="search-box" id="hear-search" placeholder="Search hearings…" type="search">
@@ -293,7 +406,7 @@ tr.clickable:hover td { background: #eef4ff; cursor: pointer; }
   <div class="page-info" id="hear-page-info"></div>
 </div>
 
-<!-- ══════════════════ BY CATEGORY ══════════════════ -->
+<!-- ══ BY CATEGORY ══ -->
 <div id="view-category" class="view">
   <div class="filter-bar">
     <span class="filter-label">Year:</span>
@@ -309,7 +422,7 @@ tr.clickable:hover td { background: #eef4ff; cursor: pointer; }
   <div class="cat-grid" id="cat-grid"></div>
 </div>
 
-<!-- ══════════════════ BY GEOGRAPHY ══════════════════ -->
+<!-- ══ BY GEOGRAPHY ══ -->
 <div id="view-geography" class="view">
   <div class="filter-bar">
     <span class="filter-label">Year:</span>
@@ -318,12 +431,10 @@ tr.clickable:hover td { background: #eef4ff; cursor: pointer; }
     <button class="yr-btn" data-year="2026">2026</button>
     <span class="filter-meta" id="geo-meta"></span>
   </div>
-  <div class="geo-wrap">
-    <div class="tile-map" id="tile-map"></div>
-  </div>
+  <div class="geo-wrap"><div class="tile-map" id="tile-map"></div></div>
 </div>
 
-<!-- ══════════════════ BILL DETAIL ══════════════════ -->
+<!-- ══ BILL DETAIL ══ -->
 <div id="view-bill-detail" class="view">
   <div class="detail-back-bar">
     <button class="back-btn" id="bill-back-btn">← Back</button>
@@ -348,48 +459,65 @@ tr.clickable:hover td { background: #eef4ff; cursor: pointer; }
       <div id="dt-sponsors"></div>
     </div>
   </div>
-  <div class="detail-card" id="dt-hearings-card">
+  <div class="detail-card">
     <div class="detail-section-title" id="dt-hearings-title">Hearings</div>
     <div id="dt-hearings"></div>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════════════════════
+<!-- ══════════════════════════════════════════════
      JAVASCRIPT
-══════════════════════════════════════════════════════════ -->
+══════════════════════════════════════════════ -->
 <script>
-// ── State ────────────────────────────────────────────────
+// ── Global state ───────────────────────────────
 let DATA = null;
 let previousView = "bills";
-const activeYears = { dashboard: "all", bills: "all", category: "all", geography: "all" };
-let billsCatFilter = "";   // shared from category card clicks
-let billsStateFilter = ""; // shared from tile clicks
+const activeYears = { dashboard:"all", bills:"all", category:"all", geography:"all" };
+let billsCatFilter = "", billsStateFilter = "";
 const charts = {};
 const PAGE_SIZE = 50;
 const S = {
-  bills: { sort: "last_action_date", dir: "desc", page: 1 },
-  leg:   { sort: "legislator_name",  dir: "asc",  page: 1 },
-  hear:  { sort: "start_dt",         dir: "desc", page: 1 },
+  bills: { sort:"last_action_date", dir:"desc", page:1 },
+  leg:   { sort:"legislator_name",  dir:"asc",  page:1 },
+  hear:  { sort:"start_dt",         dir:"desc", page:1 },
 };
 
-// ── Colors ───────────────────────────────────────────────
+// ── Pleiades color palettes ────────────────────
+// Categories palette — for categorical charts (bars, doughnut)
+const CAT_PALETTE = ["#1411B8","#6360F0","#63B289","#F1981E","#8E0000","#00005B","#CD0000","#FF6B6B","#63B289","#FFC0C0"];
+const palette = i => CAT_PALETTE[i % CAT_PALETTE.length];
+
+// Status → Categories color mapping
 const STATUS_COLORS = {
-  "Crossed Over": "#3b82f6", "Passed": "#10b981",
-  "Signed/Enacted/Adopted": "#15803d", "In Committee": "#f59e0b",
-  "Dead": "#ef4444", "Vetoed": "#dc2626",
-  "Introduced": "#6366f1", "Indefinitely Postponed": "#94a3b8",
-  "Amendments Stripped Relevant Provisions": "#f97316",
+  "Crossed Over":                           "#6360F0",
+  "Passed":                                 "#63B289",
+  "Signed/Enacted/Adopted":                 "#1411B8",
+  "In Committee":                           "#F1981E",
+  "Dead":                                   "#8E0000",
+  "Vetoed":                                 "#540000",
+  "Introduced":                             "#00005B",
+  "Indefinitely Postponed":                 "#D7D7D6",
+  "Amendments Stripped Relevant Provisions":"#CD0000",
 };
-const PALETTE = [
-  "#2563eb","#10b981","#f59e0b","#ef4444","#8b5cf6",
-  "#06b6d4","#f97316","#ec4899","#14b8a6","#a855f7",
-  "#84cc16","#0ea5e9","#d946ef","#fb923c","#22c55e",
-  "#e11d48","#7c3aed",
-];
-const statusColor = s => STATUS_COLORS[s] || "#94a3b8";
-const palette = i => PALETTE[i % PALETTE.length];
+const statusColor = s => STATUS_COLORS[s] || "#D7D7D6";
 
-// ── US Tile Map layout [code, col(1-indexed), row(1-indexed)] ──
+// Degrees palette — for tilemap (magnitude)
+// Interpolates from #FFC0C0 (light pink) to #540000 (dark maroon)
+function tileColor(count, maxCount) {
+  if (!count) return "#D7D7D6";                        // neutral gray for zero
+  const t = Math.pow(Math.min(count / maxCount, 1), 0.55);
+  const r = Math.round(255 + (84  - 255) * t);
+  const g = Math.round(192 + (0   - 192) * t);
+  const b = Math.round(192 + (0   - 192) * t);
+  return `rgb(${r},${g},${b})`;
+}
+function tileTextColor(count, maxCount) {
+  if (!count) return "#666666";
+  const t = Math.pow(Math.min(count / maxCount, 1), 0.55);
+  return t > 0.38 ? "#ffffff" : "#540000";
+}
+
+// US tile map positions [code, col(1-indexed), row(1-indexed)]
 const TILE_MAP_DEF = [
   ["WA",1,1],["MT",3,1],["ND",4,1],["MN",5,1],["VT",10,1],["ME",11,1],
   ["OR",1,2],["ID",2,2],["WY",3,2],["SD",4,2],["IA",5,2],["WI",6,2],["MI",7,2],["NY",9,2],["NH",10,2],["MA",11,2],
@@ -400,9 +528,9 @@ const TILE_MAP_DEF = [
   ["HI",2,7],["FL",8,7],
 ];
 
-// ── Utilities ────────────────────────────────────────────
+// ── Utilities ──────────────────────────────────
 function escHtml(s) {
-  return String(s || "")
+  return String(s||"")
     .replace(/&/g,"&amp;").replace(/</g,"&lt;")
     .replace(/>/g,"&gt;").replace(/"/g,"&quot;");
 }
@@ -411,46 +539,41 @@ function fmtDate(d) {
   try { return new Date(d).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}); }
   catch { return d; }
 }
-function filterByYear(items, yr, yearField = "year") {
+function filterByYear(items, yr, field="year") {
   if (yr === "all") return items;
   return items.filter(b => {
-    const v = b[yearField];
-    if (!v) return false;
+    const v = b[field]; if (!v) return false;
     return Array.isArray(v) ? v.map(String).includes(yr) : String(v) === yr;
   });
 }
 
 function badgeHtml(status) {
-  const s = (status || "").toLowerCase();
+  const s = (status||"").toLowerCase();
   let cls = "badge-other";
-  if (s.includes("sign")||s.includes("enact")||s.includes("adopt")||s==="passed") cls = "badge-enacted";
-  else if (s.includes("dead")||s.includes("fail")||s.includes("veto")||s.includes("indef")||s.includes("strip")) cls = "badge-dead";
-  else if (["crossed over","in committee","introduced"].includes(s)) cls = "badge-active";
+  if (s.includes("sign")||s.includes("enact")||s.includes("adopt")||s==="passed") cls="badge-enacted";
+  else if (s.includes("dead")||s.includes("fail")||s.includes("veto")||s.includes("indef")||s.includes("strip")) cls="badge-dead";
+  else if (["crossed over","in committee","introduced"].includes(s)) cls="badge-active";
   return `<span class="badge ${cls}">${escHtml(status)}</span>`;
 }
-
 function partyClass(p) {
   if (!p) return "";
-  if (p.startsWith("D")) return "party-d";
-  if (p.startsWith("R")) return "party-r";
-  return "party-i";
+  return p.startsWith("D") ? "party-d" : p.startsWith("R") ? "party-r" : "party-i";
 }
 
-// ── Data load ─────────────────────────────────────────────
+// ── Data load ──────────────────────────────────
 async function loadData() {
   try {
     const r = await fetch("./data.json");
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     DATA = await r.json();
-  } catch (e) {
+  } catch(e) {
     document.getElementById("loading-msg").textContent =
       "⚠ Could not load data.json — make sure it exists in the same directory.";
     return;
   }
   document.getElementById("loading-msg").style.display = "none";
   const ts = DATA.generated_at
-    ? new Date(DATA.generated_at).toLocaleString("en-US",{dateStyle:"medium",timeStyle:"short"})
-    : "";
+    ? new Date(DATA.generated_at).toLocaleString("en-US",{dateStyle:"medium",timeStyle:"short"}) : "";
   document.getElementById("header-meta").innerHTML =
     `${DATA.summary.total} bills · ${DATA.summary.states} states<br>`+
     `<span style="font-size:10px">Updated ${ts}</span>`;
@@ -459,14 +582,14 @@ async function loadData() {
   showView("dashboard");
 }
 
-// ── Dropdowns ─────────────────────────────────────────────
+// ── Dropdowns ──────────────────────────────────
 function populateDropdowns() {
-  const bills = DATA.bills || [];
-  const states  = [...new Set(bills.map(b=>b.state).filter(Boolean))].sort();
+  const bills = DATA.bills||[];
+  const states   = [...new Set(bills.map(b=>b.state).filter(Boolean))].sort();
   const statuses = [...new Set(bills.map(b=>b.status).filter(Boolean))].sort();
-  const cats    = [...new Set(bills.flatMap(b=>b.keyword_tags||[]).filter(Boolean))].sort();
-  const parties = [...new Set((DATA.legislators||[]).map(l=>l.legislator_party).filter(Boolean))].sort();
-  const hearSt  = [...new Set((DATA.hearings||[]).map(h=>h.state).filter(Boolean))].sort();
+  const cats     = [...new Set(bills.flatMap(b=>b.keyword_tags||[]).filter(Boolean))].sort();
+  const parties  = [...new Set((DATA.legislators||[]).map(l=>l.legislator_party).filter(Boolean))].sort();
+  const hearSt   = [...new Set((DATA.hearings||[]).map(h=>h.state).filter(Boolean))].sort();
 
   [["bills-state-filter",states],["leg-state-filter",states],["hear-state-filter",hearSt]].forEach(([id,opts])=>{
     const el=document.getElementById(id); if(!el)return; opts.forEach(s=>el.add(new Option(s,s)));
@@ -476,239 +599,226 @@ function populateDropdowns() {
   const pf =document.getElementById("leg-party-filter");    if(pf)  parties.forEach(p=>pf.add(new Option(p,p)));
 }
 
-// ── Navigation ────────────────────────────────────────────
-function showView(name, fromBillDetail=false) {
-  if (!fromBillDetail && name !== "bill-detail") previousView = name;
+// ── Navigation ─────────────────────────────────
+function showView(name, fromDetail=false) {
+  if (!fromDetail && name!=="bill-detail") previousView = name;
   document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
-  document.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active", b.dataset.view===name));
+  document.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.view===name));
   document.getElementById(`view-${name}`).classList.add("active");
   switch(name) {
-    case "dashboard":   renderDashboard();    break;
-    case "bills":       renderBills();        break;
-    case "legislators": renderLegislators();  break;
-    case "hearings":    renderHearings();     break;
-    case "category":    renderCategory();     break;
-    case "geography":   renderGeography();    break;
+    case "dashboard":   renderDashboard();   break;
+    case "bills":       renderBills();       break;
+    case "legislators": renderLegislators(); break;
+    case "hearings":    renderHearings();    break;
+    case "category":    renderCategory();    break;
+    case "geography":   renderGeography();   break;
   }
 }
-
 document.querySelectorAll(".nav-btn").forEach(btn=>{
-  btn.addEventListener("click",()=>{
-    // Reset cross-view filters when navigating manually
-    billsCatFilter   = "";
-    billsStateFilter = "";
-    showView(btn.dataset.view);
-  });
+  btn.addEventListener("click",()=>{ billsCatFilter=""; billsStateFilter=""; showView(btn.dataset.view); });
 });
+document.getElementById("bill-back-btn").onclick = ()=>showView(previousView,true);
 
-document.getElementById("bill-back-btn").onclick = () => {
-  showView(previousView, true);
-};
-
-// ── Year filter wiring ────────────────────────────────────
-function wireYearBtns(viewId, key, renderFn) {
+// Year filter wiring
+function wireYearBtns(viewId,key,fn) {
   document.querySelectorAll(`#view-${viewId} .yr-btn`).forEach(btn=>{
     btn.addEventListener("click",()=>{
       document.querySelectorAll(`#view-${viewId} .yr-btn`).forEach(b=>b.classList.remove("active"));
       btn.classList.add("active");
-      activeYears[key] = btn.dataset.year;
+      activeYears[key]=btn.dataset.year;
       if(key==="bills") S.bills.page=1;
-      renderFn();
+      fn();
     });
   });
 }
-wireYearBtns("dashboard","dashboard", renderDashboard);
-wireYearBtns("bills",    "bills",     renderBills);
-wireYearBtns("category", "category",  renderCategory);
-wireYearBtns("geography","geography", renderGeography);
+wireYearBtns("dashboard","dashboard",renderDashboard);
+wireYearBtns("bills","bills",renderBills);
+wireYearBtns("category","category",renderCategory);
+wireYearBtns("geography","geography",renderGeography);
 
-// ── Chart helpers ─────────────────────────────────────────
-function destroyChart(id) { if(charts[id]){charts[id].destroy();delete charts[id];} }
+// ── Chart helpers ──────────────────────────────
+function destroyChart(id){if(charts[id]){charts[id].destroy();delete charts[id];}}
 
 function makeDonut(id, labels, data) {
   destroyChart(id);
   const ctx=document.getElementById(id); if(!ctx)return;
   charts[id]=new Chart(ctx,{type:"doughnut",
-    data:{labels,datasets:[{data,backgroundColor:labels.map(statusColor),borderWidth:1}]},
-    options:{plugins:{legend:{position:"right",labels:{font:{size:11},boxWidth:12}}},cutout:"60%"},
+    data:{labels,datasets:[{data,backgroundColor:labels.map(statusColor),borderWidth:1,borderColor:"#fff"}]},
+    options:{plugins:{legend:{position:"right",labels:{font:{size:11,family:"'Nunito Sans', sans-serif"},boxWidth:12}}},cutout:"58%"},
   });
 }
 function makeBar(id, labels, data, horizontal=false) {
   destroyChart(id);
   const ctx=document.getElementById(id); if(!ctx)return;
   charts[id]=new Chart(ctx,{type:"bar",
-    data:{labels,datasets:[{data,backgroundColor:data.map((_,i)=>palette(i)),borderRadius:4,borderSkipped:false}]},
+    data:{labels,datasets:[{data,backgroundColor:data.map((_,i)=>palette(i)),borderRadius:3,borderSkipped:false}]},
     options:{indexAxis:horizontal?"y":"x",
       plugins:{legend:{display:false}},
-      scales:{x:{grid:{color:"#f0f3f8"},ticks:{font:{size:10}}},y:{grid:{color:"#f0f3f8"},ticks:{font:{size:10}}}},
+      scales:{
+        x:{grid:{color:"rgba(215,215,214,.5)"},ticks:{font:{size:10,family:"'Nunito Sans',sans-serif"},color:"#666"}},
+        y:{grid:{color:"rgba(215,215,214,.5)"},ticks:{font:{size:10,family:"'Nunito Sans',sans-serif"},color:"#666"}},
+      },
     },
   });
 }
 
-// ── DASHBOARD ─────────────────────────────────────────────
+// ── DASHBOARD ──────────────────────────────────
 function renderDashboard() {
-  const bills = filterByYear(DATA.bills||[], activeYears.dashboard);
-  const total   = bills.length;
-  const states  = new Set(bills.map(b=>b.state).filter(Boolean)).size;
-  const enacted = bills.filter(b=>b.status_bucket==="enacted").length;
-  const dead    = bills.filter(b=>b.status_bucket==="dead").length;
-  const active  = total-enacted-dead;
+  const bills=filterByYear(DATA.bills||[],activeYears.dashboard);
+  const total=bills.length;
+  const states=new Set(bills.map(b=>b.state).filter(Boolean)).size;
+  const enacted=bills.filter(b=>b.status_bucket==="enacted").length;
+  const dead=bills.filter(b=>b.status_bucket==="dead").length;
+  const active=total-enacted-dead;
 
   document.getElementById("dash-meta").textContent=`● ${total} bills · ${states} states`;
   document.getElementById("stats-row").innerHTML=`
-    <div class="stat-card"><div class="stat-label">Total Bills</div>
-      <div class="stat-value">${total.toLocaleString()}</div><div class="stat-sub">across ${states} states</div></div>
-    <div class="stat-card"><div class="stat-label">Active</div>
-      <div class="stat-value" style="color:#1d4ed8">${active.toLocaleString()}</div><div class="stat-sub">in progress</div></div>
-    <div class="stat-card"><div class="stat-label">Enacted</div>
-      <div class="stat-value" style="color:#15803d">${enacted.toLocaleString()}</div><div class="stat-sub">signed into law</div></div>
-    <div class="stat-card"><div class="stat-label">Dead / Failed</div>
-      <div class="stat-value" style="color:#b91c1c">${dead.toLocaleString()}</div><div class="stat-sub">bills</div></div>`;
+    <div class="stat-card">
+      <div class="stat-label">Total Bills</div>
+      <div class="stat-value abel" style="color:var(--brand)">${total.toLocaleString()}</div>
+      <div class="stat-sub">across ${states} states</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Active</div>
+      <div class="stat-value abel" style="color:var(--blue-deep)">${active.toLocaleString()}</div>
+      <div class="stat-sub">in progress</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Enacted</div>
+      <div class="stat-value abel" style="color:var(--teal)">${enacted.toLocaleString()}</div>
+      <div class="stat-sub">signed into law</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Dead / Failed</div>
+      <div class="stat-value abel" style="color:var(--crimson)">${dead.toLocaleString()}</div>
+      <div class="stat-sub">bills</div>
+    </div>`;
 
-  const sm={}, stM={}, cM={};
+  const sm={},stM={},cM={};
   bills.forEach(b=>{
     if(b.status) sm[b.status]=(sm[b.status]||0)+1;
     if(b.state)  stM[b.state]=(stM[b.state]||0)+1;
-    (b.keyword_tags||[]).forEach(c=>{ if(c) cM[c]=(cM[c]||0)+1; });
+    (b.keyword_tags||[]).forEach(c=>{if(c) cM[c]=(cM[c]||0)+1;});
   });
-  const srt=(o,n=0)=>{ const p=Object.entries(o).sort((a,b)=>b[1]-a[1]); return n?p.slice(0,n):p; };
-  const ss=srt(sm), stt=srt(stM,15), sc=srt(cM,12);
-  makeDonut("chart-status", ss.map(x=>x[0]),  ss.map(x=>x[1]));
-  makeBar("chart-states",   stt.map(x=>x[0]), stt.map(x=>x[1]), true);
-  makeBar("chart-cats",     sc.map(x=>x[0]),  sc.map(x=>x[1]),  true);
+  const srt=(o,n=0)=>{const p=Object.entries(o).sort((a,b)=>b[1]-a[1]);return n?p.slice(0,n):p;};
+  const ss=srt(sm),stt=srt(stM,15),sc=srt(cM,12);
+  makeDonut("chart-status",ss.map(x=>x[0]),ss.map(x=>x[1]));
+  makeBar("chart-states",stt.map(x=>x[0]),stt.map(x=>x[1]),true);
+  makeBar("chart-cats",sc.map(x=>x[0]),sc.map(x=>x[1]),true);
 }
 
-// ── BILL DETAIL ───────────────────────────────────────────
+// ── BILL DETAIL ────────────────────────────────
 function showBillDetail(billId) {
-  const bill = (DATA.bills||[]).find(b=>b.bill_id===billId);
-  if (!bill) return;
+  const bill=(DATA.bills||[]).find(b=>b.bill_id===billId);
+  if(!bill)return;
 
-  // Title
-  document.getElementById("dt-title").textContent = `${bill.bill_number} — ${bill.title}`;
+  document.getElementById("dt-title").textContent=`${bill.bill_number} — ${bill.title}`;
 
-  // Badges
-  const badges = [badgeHtml(bill.status)];
+  const badges=[badgeHtml(bill.status)];
   (bill.keyword_tags||[]).forEach(c=>badges.push(`<span class="cat-tag">${escHtml(c)}</span>`));
-  document.getElementById("dt-badges").innerHTML = badges.join("");
+  document.getElementById("dt-badges").innerHTML=badges.join("");
 
-  // Links
-  const links = [];
-  if (bill.bill_url) links.push(`<a class="detail-link-btn" href="${escHtml(bill.bill_url)}" target="_blank">View on BillTrack50 ↗</a>`);
-  if (bill.document_link) links.push(`<a class="detail-link-btn" href="${escHtml(bill.document_link)}" target="_blank">View Document ↗</a>`);
-  document.getElementById("dt-links").innerHTML = links.join("");
+  const links=[];
+  if(bill.bill_url) links.push(`<a class="detail-link-btn" href="${escHtml(bill.bill_url)}" target="_blank">View on BillTrack50 ↗</a>`);
+  if(bill.document_link) links.push(`<a class="detail-link-btn" href="${escHtml(bill.document_link)}" target="_blank">View Document ↗</a>`);
+  document.getElementById("dt-links").innerHTML=links.join("");
 
-  // Dates
-  document.getElementById("dt-dates").innerHTML = `
+  document.getElementById("dt-dates").innerHTML=`
     <div class="detail-date-row"><span class="detail-date-label">Introduced</span><span class="detail-date-val">${fmtDate(bill.introduced_date)}</span></div>
     <div class="detail-date-row"><span class="detail-date-label">Last Action</span><span class="detail-date-val">${fmtDate(bill.last_action_date)}</span></div>
     <div class="detail-date-row"><span class="detail-date-label">Session</span><span class="detail-date-val">${escHtml(bill.session)}</span></div>`;
 
-  // Summary
-  document.getElementById("dt-summary").textContent =
-    bill.summary || bill.notes || "No summary available.";
+  document.getElementById("dt-summary").textContent=bill.summary||bill.notes||"No summary available.";
 
-  // Sponsors — match legislators by linked_bill_ids
-  const sponsors = (DATA.legislators||[]).filter(l=>(l.linked_bill_ids||[]).includes(billId));
-  document.getElementById("dt-sponsors-title").textContent =
-    `Sponsors${sponsors.length ? ` (${sponsors.length})` : ""}`;
-  document.getElementById("dt-sponsors").innerHTML = sponsors.length
-    ? sponsors.map(l=>`
-        <div class="sponsor-item">
-          <div class="sponsor-name ${partyClass(l.legislator_party)}">${escHtml(l.legislator_name)}</div>
-          <div class="sponsor-meta">
-            ${escHtml(l.role)}${l.district?` · ${escHtml(l.district)}`:""}
-            ${l.ballotpedia_url?` · <a href="${escHtml(l.ballotpedia_url)}" target="_blank">Ballotpedia</a>`:""}
-          </div>
-        </div>`).join("")
-    : `<div class="empty-msg" style="text-align:left;padding:8px 0;color:#aab0c0">No sponsor data linked.</div>`;
+  const sponsors=(DATA.legislators||[]).filter(l=>(l.linked_bill_ids||[]).includes(billId));
+  document.getElementById("dt-sponsors-title").textContent=`Sponsors${sponsors.length?` (${sponsors.length})`:""}`;
+  document.getElementById("dt-sponsors").innerHTML=sponsors.length
+    ?sponsors.map(l=>`
+      <div class="sponsor-item">
+        <div class="sponsor-name ${partyClass(l.legislator_party)}">${escHtml(l.legislator_name)}</div>
+        <div class="sponsor-meta">${escHtml(l.role)}${l.district?` · ${escHtml(l.district)}`:""}
+          ${l.ballotpedia_url?` · <a href="${escHtml(l.ballotpedia_url)}" target="_blank">Ballotpedia</a>`:""}
+        </div>
+      </div>`).join("")
+    :`<div style="font-size:13px;color:#aaa;padding-top:4px">No sponsor data linked.</div>`;
 
-  // Hearings — match by linked_bill_ids
-  const hearings = (DATA.hearings||[])
+  const hearings=(DATA.hearings||[])
     .filter(h=>(h.linked_bill_ids||[]).includes(billId))
     .sort((a,b)=>String(b.start_dt).localeCompare(String(a.start_dt)));
-  document.getElementById("dt-hearings-title").textContent =
-    `Hearings${hearings.length ? ` (${hearings.length})` : ""}`;
-  document.getElementById("dt-hearings").innerHTML = hearings.length
-    ? hearings.map(h=>`
-        <div class="hearing-item">
-          <div class="hearing-date">${fmtDate(h.start_dt)}${h.event_link?` — <a href="${escHtml(h.event_link)}" target="_blank">Link ↗</a>`:""}</div>
-          <div class="hearing-title">${escHtml(h.title)}</div>
-          <div class="hearing-loc">${escHtml(h.location)}</div>
-        </div>`).join("")
-    : `<div class="empty-msg" style="text-align:left;padding:8px 0;color:#aab0c0">No hearings on record.</div>`;
+  document.getElementById("dt-hearings-title").textContent=`Hearings${hearings.length?` (${hearings.length})`:""}`;
+  document.getElementById("dt-hearings").innerHTML=hearings.length
+    ?hearings.map(h=>`
+      <div class="hearing-item">
+        <div class="hearing-date">${fmtDate(h.start_dt)}${h.event_link?` — <a href="${escHtml(h.event_link)}" target="_blank">Link ↗</a>`:""}</div>
+        <div class="hearing-title">${escHtml(h.title)}</div>
+        <div class="hearing-loc">${escHtml(h.location)}</div>
+      </div>`).join("")
+    :`<div style="font-size:13px;color:#aaa;padding-top:4px">No hearings on record.</div>`;
 
-  // Show the detail view (without changing previousView)
   document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
   document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("active"));
   document.getElementById("view-bill-detail").classList.add("active");
   window.scrollTo(0,0);
 }
 
-// ── BILLS TABLE ───────────────────────────────────────────
+// ── BILLS TABLE ────────────────────────────────
 function renderBills() {
-  const search   = (document.getElementById("bills-search")?.value||"").toLowerCase();
-  const stFilter = billsStateFilter || document.getElementById("bills-state-filter")?.value || "";
-  const stStatus = document.getElementById("bills-status-filter")?.value||"";
-  const stCat    = billsCatFilter || document.getElementById("bills-cat-filter")?.value||"";
+  const search  =(document.getElementById("bills-search")?.value||"").toLowerCase();
+  const stFilter=billsStateFilter||document.getElementById("bills-state-filter")?.value||"";
+  const stStatus=document.getElementById("bills-status-filter")?.value||"";
+  const stCat   =billsCatFilter||document.getElementById("bills-cat-filter")?.value||"";
+  const stEl=document.getElementById("bills-state-filter"),ctEl=document.getElementById("bills-cat-filter");
+  if(stEl&&billsStateFilter) stEl.value=billsStateFilter;
+  if(ctEl&&billsCatFilter)   ctEl.value=billsCatFilter;
 
-  // Sync dropdown to cross-view filters
-  const stEl = document.getElementById("bills-state-filter");
-  const ctEl = document.getElementById("bills-cat-filter");
-  if (stEl && billsStateFilter) stEl.value = billsStateFilter;
-  if (ctEl && billsCatFilter)   ctEl.value = billsCatFilter;
+  let rows=filterByYear(DATA.bills||[],activeYears.bills);
+  if(search)   rows=rows.filter(b=>(b.title||"").toLowerCase().includes(search)||(b.bill_number||"").toLowerCase().includes(search)||(b.sponsors||"").toLowerCase().includes(search));
+  if(stFilter) rows=rows.filter(b=>b.state===stFilter);
+  if(stStatus) rows=rows.filter(b=>b.status===stStatus);
+  if(stCat)    rows=rows.filter(b=>(b.keyword_tags||[]).includes(stCat));
 
-  let rows = filterByYear(DATA.bills||[], activeYears.bills);
-  if (search)   rows=rows.filter(b=>(b.title||"").toLowerCase().includes(search)||(b.bill_number||"").toLowerCase().includes(search)||(b.sponsors||"").toLowerCase().includes(search));
-  if (stFilter) rows=rows.filter(b=>b.state===stFilter);
-  if (stStatus) rows=rows.filter(b=>b.status===stStatus);
-  if (stCat)    rows=rows.filter(b=>(b.keyword_tags||[]).includes(stCat));
-
-  const {sort,dir}=S.bills;
+  const{sort,dir}=S.bills;
   rows.sort((a,b)=>{
-    let av=a[sort]??"", bv=b[sort]??"";
+    let av=a[sort]??"",bv=b[sort]??"";
     if(Array.isArray(av)) av=av.join(", ");
     if(Array.isArray(bv)) bv=bv.join(", ");
     const c=String(av).localeCompare(String(bv),undefined,{numeric:true});
     return dir==="asc"?c:-c;
   });
-
   document.getElementById("bills-meta").textContent=`${rows.length.toLocaleString()} bill${rows.length!==1?"s":""}`;
   renderTablePage("bills-tbody",rows,S.bills,renderBillRow);
   renderPagination("bills-pagination","bills-page-info",rows.length,S.bills,renderBills);
   updateSortHeaders("bills-table",S.bills);
 }
-
 function renderBillRow(b) {
   const cats=(b.keyword_tags||[]).map(c=>`<span class="cat-tag" style="font-size:10px">${escHtml(c)}</span>`).join(" ");
   const links=[];
-  if(b.bill_url) links.push(`<a href="${escHtml(b.bill_url)}" target="_blank" onclick="event.stopPropagation()">BT50</a>`);
+  if(b.bill_url)      links.push(`<a href="${escHtml(b.bill_url)}" target="_blank" onclick="event.stopPropagation()">BT50</a>`);
   if(b.document_link) links.push(`<a href="${escHtml(b.document_link)}" target="_blank" onclick="event.stopPropagation()">Doc</a>`);
   return `<tr class="clickable" onclick="previousView='bills';showBillDetail('${escHtml(b.bill_id)}')">
-    <td><strong>${escHtml(b.bill_number)}</strong><br><span style="font-size:11px;color:#5a6a8a">${escHtml(b.title)}</span></td>
-    <td>${escHtml(b.state)}</td>
+    <td><strong style="color:var(--brand)">${escHtml(b.bill_number)}</strong><br>
+        <span style="font-size:11px;color:var(--text-mid)">${escHtml(b.title)}</span></td>
+    <td style="font-weight:600;color:var(--brand)">${escHtml(b.state)}</td>
     <td>${badgeHtml(b.status)}</td>
     <td>${cats}</td>
-    <td style="white-space:nowrap">${fmtDate(b.last_action_date)}</td>
-    <td style="font-size:11px">${escHtml(b.sponsors)}</td>
+    <td style="white-space:nowrap;color:var(--text-mid)">${fmtDate(b.last_action_date)}</td>
+    <td style="font-size:11px;color:var(--text-mid)">${escHtml(b.sponsors)}</td>
     <td style="white-space:nowrap">${links.join(" · ")}</td>
   </tr>`;
 }
-
 ["bills-search","bills-state-filter","bills-status-filter","bills-cat-filter"].forEach(id=>{
-  document.getElementById(id)?.addEventListener("input",()=>{
-    billsCatFilter=""; billsStateFilter=""; S.bills.page=1; renderBills();
-  });
+  document.getElementById(id)?.addEventListener("input",()=>{billsCatFilter="";billsStateFilter="";S.bills.page=1;renderBills();});
 });
 document.getElementById("bills-table")?.querySelectorAll("th[data-col]").forEach(th=>{
   th.addEventListener("click",()=>{
     const col=th.dataset.col;
     if(S.bills.sort===col) S.bills.dir=S.bills.dir==="asc"?"desc":"asc";
     else{S.bills.sort=col;S.bills.dir="asc";}
-    S.bills.page=1; renderBills();
+    S.bills.page=1;renderBills();
   });
 });
 
-// ── LEGISLATORS ───────────────────────────────────────────
+// ── LEGISLATORS ────────────────────────────────
 function renderLegislators() {
   const search  =(document.getElementById("leg-search")?.value||"").toLowerCase();
   const stFilter=document.getElementById("leg-state-filter")?.value||"";
@@ -717,11 +827,8 @@ function renderLegislators() {
   if(search)   rows=rows.filter(l=>(l.legislator_name||"").toLowerCase().includes(search)||(l.district||"").toLowerCase().includes(search));
   if(stFilter) rows=rows.filter(l=>l.state_code===stFilter);
   if(party)    rows=rows.filter(l=>l.legislator_party===party);
-  const {sort,dir}=S.leg;
-  rows.sort((a,b)=>{
-    const c=String(a[sort]??"").localeCompare(String(b[sort]??""),undefined,{numeric:true});
-    return dir==="asc"?c:-c;
-  });
+  const{sort,dir}=S.leg;
+  rows.sort((a,b)=>{const c=String(a[sort]??"").localeCompare(String(b[sort]??""),undefined,{numeric:true});return dir==="asc"?c:-c;});
   document.getElementById("leg-meta").textContent=`${rows.length.toLocaleString()} legislator${rows.length!==1?"s":""}`;
   renderTablePage("leg-tbody",rows,S.leg,renderLegRow);
   renderPagination("leg-pagination","leg-page-info",rows.length,S.leg,renderLegislators);
@@ -729,15 +836,15 @@ function renderLegislators() {
 }
 function renderLegRow(l) {
   const links=[];
-  if(l.ballotpedia_url) links.push(`<a href="${escHtml(l.ballotpedia_url)}" target="_blank">Ballotpedia</a>`);
+  if(l.ballotpedia_url)      links.push(`<a href="${escHtml(l.ballotpedia_url)}" target="_blank">Ballotpedia</a>`);
   if(l.follow_the_money_url) links.push(`<a href="${escHtml(l.follow_the_money_url)}" target="_blank">FTM</a>`);
   return `<tr>
-    <td class="${partyClass(l.legislator_party)}"><strong>${escHtml(l.legislator_name)}</strong></td>
+    <td><strong class="${partyClass(l.legislator_party)}">${escHtml(l.legislator_name)}</strong></td>
     <td><strong class="${partyClass(l.legislator_party)}">${escHtml(l.legislator_party)}</strong></td>
-    <td>${escHtml(l.state_code)}</td>
-    <td style="font-size:12px">${escHtml(l.role)}</td>
-    <td style="font-size:12px">${escHtml(l.district)}</td>
-    <td style="text-align:center">${l.bill_count||0}</td>
+    <td style="font-weight:600;color:var(--brand)">${escHtml(l.state_code)}</td>
+    <td style="font-size:12px;color:var(--text-mid)">${escHtml(l.role)}</td>
+    <td style="font-size:12px;color:var(--text-mid)">${escHtml(l.district)}</td>
+    <td style="text-align:center;font-weight:600;color:var(--brand)">${l.bill_count||0}</td>
     <td style="white-space:nowrap;font-size:12px">${links.join(" · ")}</td>
   </tr>`;
 }
@@ -753,18 +860,15 @@ document.getElementById("leg-table")?.querySelectorAll("th[data-col]").forEach(t
   });
 });
 
-// ── HEARINGS ──────────────────────────────────────────────
+// ── HEARINGS ───────────────────────────────────
 function renderHearings() {
   const search  =(document.getElementById("hear-search")?.value||"").toLowerCase();
   const stFilter=document.getElementById("hear-state-filter")?.value||"";
   let rows=DATA.hearings||[];
   if(search)   rows=rows.filter(h=>(h.title||"").toLowerCase().includes(search)||(h.location||"").toLowerCase().includes(search));
   if(stFilter) rows=rows.filter(h=>h.state===stFilter);
-  const {sort,dir}=S.hear;
-  rows.sort((a,b)=>{
-    const c=String(a[sort]??"").localeCompare(String(b[sort]??""),undefined,{numeric:true});
-    return dir==="asc"?c:-c;
-  });
+  const{sort,dir}=S.hear;
+  rows.sort((a,b)=>{const c=String(a[sort]??"").localeCompare(String(b[sort]??""),undefined,{numeric:true});return dir==="asc"?c:-c;});
   document.getElementById("hear-meta").textContent=`${rows.length.toLocaleString()} hearing${rows.length!==1?"s":""}`;
   renderTablePage("hear-tbody",rows,S.hear,renderHearRow);
   renderPagination("hear-pagination","hear-page-info",rows.length,S.hear,renderHearings);
@@ -772,13 +876,13 @@ function renderHearings() {
 }
 function renderHearRow(h) {
   const billId=(h.linked_bill_ids||[])[0]||null;
-  const onclick=billId?`previousView='hearings';showBillDetail('${escHtml(billId)}')`:null;
-  return `<tr ${onclick?`class="clickable" onclick="${onclick}"`:""}>
-    <td style="white-space:nowrap">${fmtDate(h.start_dt)}</td>
-    <td style="font-size:12px;max-width:300px">${escHtml(h.title)}</td>
-    <td>${escHtml(h.state)}</td>
-    <td style="font-size:12px">${escHtml(h.location)}</td>
-    <td>${h.event_link?`<a href="${escHtml(h.event_link)}" target="_blank" onclick="event.stopPropagation()">Link ↗</a>`:""}  </td>
+  const oc=billId?`previousView='hearings';showBillDetail('${escHtml(billId)}')`:null;
+  return `<tr ${oc?`class="clickable" onclick="${oc}"`:""}>
+    <td style="white-space:nowrap;font-family:'Abel',sans-serif;font-size:14px;color:var(--brand)">${fmtDate(h.start_dt)}</td>
+    <td style="font-size:12px;max-width:300px;color:var(--text-mid)">${escHtml(h.title)}</td>
+    <td style="font-weight:600;color:var(--brand)">${escHtml(h.state)}</td>
+    <td style="font-size:12px;color:var(--text-mid)">${escHtml(h.location)}</td>
+    <td>${h.event_link?`<a href="${escHtml(h.event_link)}" target="_blank" onclick="event.stopPropagation()">Link ↗</a>`:""}</td>
   </tr>`;
 }
 ["hear-search","hear-state-filter"].forEach(id=>{
@@ -793,7 +897,7 @@ document.getElementById("hear-table")?.querySelectorAll("th[data-col]").forEach(
   });
 });
 
-// ── BY CATEGORY ───────────────────────────────────────────
+// ── BY CATEGORY ────────────────────────────────
 function renderCategory() {
   const bills=filterByYear(DATA.bills||[],activeYears.category);
   const catMap={};
@@ -812,9 +916,10 @@ function renderCategory() {
   const ctx=document.getElementById("chart-cats-full");
   if(ctx) charts["chart-cats-full"]=new Chart(ctx,{type:"bar",
     data:{labels:sorted.map(x=>x[0]),datasets:[{data:sorted.map(x=>x[1].total),
-      backgroundColor:sorted.map((_,i)=>palette(i)),borderRadius:4}]},
+      backgroundColor:sorted.map((_,i)=>palette(i)),borderRadius:3}]},
     options:{indexAxis:"y",plugins:{legend:{display:false}},
-      scales:{x:{grid:{color:"#f0f3f8"}},y:{ticks:{font:{size:11}}}}},
+      scales:{x:{grid:{color:"rgba(215,215,214,.5)"},ticks:{font:{size:10,family:"'Nunito Sans',sans-serif"},color:"#666"}},
+               y:{ticks:{font:{size:11,family:"'Nunito Sans',sans-serif"},color:"#333"}}}},
   });
 
   document.getElementById("cat-grid").innerHTML=sorted.map(([name,counts])=>`
@@ -823,72 +928,46 @@ function renderCategory() {
       <div class="cat-count">${counts.total}</div>
       <div class="cat-sub">bills</div>
       <div class="cat-buckets">
-        <span style="color:#15803d">▲ ${counts.enacted} enacted</span> ·
-        <span style="color:#1d4ed8">${counts.active} active</span> ·
-        <span style="color:#b91c1c">✕ ${counts.dead} dead</span>
+        <span style="color:var(--teal)">▲ ${counts.enacted} enacted</span> ·
+        <span style="color:var(--blue-deep)">${counts.active} active</span> ·
+        <span style="color:var(--crimson)">✕ ${counts.dead} dead</span>
       </div>
     </div>`).join("");
 }
-
-function goToCategoryBills(catName) {
-  billsCatFilter = catName;
-  S.bills.page = 1;
-  showView("bills");
-  // Sync the nav highlight
+function goToCategoryBills(cat) {
+  billsCatFilter=cat; S.bills.page=1; showView("bills");
   document.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.view==="bills"));
 }
 
-// ── BY GEOGRAPHY (tile map) ───────────────────────────────
+// ── BY GEOGRAPHY (Degrees palette tilemap) ─────
 function renderGeography() {
   const bills=filterByYear(DATA.bills||[],activeYears.geography);
   const stateMap={};
   bills.forEach(b=>{ if(b.state) stateMap[b.state]=(stateMap[b.state]||0)+1; });
   const maxCount=Math.max(...Object.values(stateMap),1);
-
   document.getElementById("geo-meta").textContent=
     `${Object.keys(stateMap).length} states · ${bills.length} bills`;
 
-  function tileColor(count) {
-    if(!count) return "#d1dce8";
-    const t=Math.pow(Math.min(count/maxCount,1),0.6); // gamma for better low-end visibility
-    const r=Math.round(199+(26-199)*t);
-    const g=Math.round(217+(39-217)*t);
-    const b_=Math.round(241+(68-241)*t);
-    return `rgb(${r},${g},${b_})`;
-  }
-  function tileText(count) {
-    if(!count) return "#94a3b8";
-    const t=Math.pow(Math.min(count/maxCount,1),0.6);
-    return t>0.55?"#ffffff":"#1a2744";
-  }
-
-  const tiles=TILE_MAP_DEF.map(([code,col,row])=>{
+  document.getElementById("tile-map").innerHTML=TILE_MAP_DEF.map(([code,col,row])=>{
     const count=stateMap[code]||0;
-    const bg=tileColor(count);
-    const fg=tileText(count);
+    const bg=tileColor(count,maxCount), fg=tileTextColor(count,maxCount);
     return `<div class="tile" style="grid-column:${col};grid-row:${row};background:${bg};color:${fg}"
-      title="${code}: ${count} bill${count!==1?'s':''}"
+      title="${code}: ${count} bill${count!==1?"s":""}"
       onclick="goToStateBills('${code}')">
       <span class="tile-code">${code}</span>
       <span class="tile-count">${count||""}</span>
     </div>`;
-  });
-
-  document.getElementById("tile-map").innerHTML=tiles.join("");
+  }).join("");
 }
-
 function goToStateBills(state) {
-  billsStateFilter = state;
-  S.bills.page = 1;
-  showView("bills");
+  billsStateFilter=state; S.bills.page=1; showView("bills");
   document.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.view==="bills"));
 }
 
-// ── Shared table helpers ──────────────────────────────────
-function renderTablePage(tbodyId, rows, st, rowFn) {
+// ── Shared table helpers ───────────────────────
+function renderTablePage(tbodyId,rows,st,rowFn) {
   const tbody=document.getElementById(tbodyId); if(!tbody)return;
-  const start=(st.page-1)*PAGE_SIZE;
-  const slice=rows.slice(start,start+PAGE_SIZE);
+  const slice=rows.slice((st.page-1)*PAGE_SIZE,st.page*PAGE_SIZE);
   if(!slice.length){
     tbody.innerHTML=`<tr><td colspan="99"><div class="empty-msg">No results found.</div></td></tr>`;
     return;
@@ -897,8 +976,7 @@ function renderTablePage(tbodyId, rows, st, rowFn) {
 }
 function renderPagination(paginationId,infoId,total,st,rerender) {
   const pages=Math.ceil(total/PAGE_SIZE);
-  const el=document.getElementById(paginationId);
-  const infoEl=document.getElementById(infoId);
+  const el=document.getElementById(paginationId), infoEl=document.getElementById(infoId);
   if(!el)return;
   if(infoEl){
     const s=Math.min((st.page-1)*PAGE_SIZE+1,total),e=Math.min(st.page*PAGE_SIZE,total);
@@ -925,7 +1003,7 @@ function updateSortHeaders(tableId,st) {
   });
 }
 
-// ── Boot ──────────────────────────────────────────────────
+// ── Boot ───────────────────────────────────────
 loadData();
 </script>
 </body>
