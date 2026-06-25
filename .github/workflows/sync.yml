@@ -1,4 +1,3 @@
-yaml
 name: Sync Airtable → data.json
 
 on:
