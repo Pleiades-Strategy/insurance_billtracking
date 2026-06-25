@@ -1,0 +1,12 @@
+{
+  "generated_at": "",
+  "summary": { "total": 0, "states": 0, "enacted": 0, "active": 0, "dead": 0, "with_text": 0 },
+  "charts": {
+    "by_status":   { "labels": [], "data": [] },
+    "by_state":    { "labels": [], "data": [] },
+    "by_category": { "labels": [], "data": [] }
+  },
+  "bills":       [],
+  "hearings":    [],
+  "legislators": []
+}
